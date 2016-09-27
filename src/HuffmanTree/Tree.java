@@ -1,13 +1,18 @@
 package HuffmanTree;
 
-import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Tree {
     Node root = null;
-    ArrayList symbolList = new ArrayList();
+    Map<String, Node> symbols = new HashMap<>();
+    Node nytNode = null;
 
     public Tree (int messageLength) {
-        root = new Node(0, 2 * messageLength + 1, "NYT");
+        root = new Node(2 * messageLength + 1, "NYT");
+        nytNode = root;
+
+        root.setWeight(0);
     }
 
     public Node getRoot() {
@@ -16,47 +21,33 @@ public class Tree {
 
     public void addSymbol(String symbol) {
         if (symbolSeen(symbol)) {
-            System.out.println("Seen");
+            Node leaf = symbols.get(symbol);
+            leaf.incrementWeight();
+
         } else {
-            symbolList.add(symbol);
-            System.out.println("Not seen");
+            Node leafNode = new Node(symbol);
+            Node blockParent = new Node();
+
+
+            blockParent.leftChild = nytNode;
+            blockParent.rightChild = leafNode;
+
+            //Setting the weights for all the nodes in the new block
+            blockParent.setNodeNumber(nytNode.getNodeNumber());
+            leafNode.setNodeNumber(nytNode.getNodeNumber() - 1);
+            nytNode.setNodeNumber(nytNode.getNodeNumber() - 2);
+
+            symbols.put(symbol, leafNode);
+
+            root = blockParent;
+
         }
     }
 
     private boolean symbolSeen(String symbol) {
-        for (int i = 0; i < symbolList.size(); i++) {
-            if (symbolList.get(i).equals(symbol))
-                return true;
-        }
-
-        return false;
+        if (symbols.get(symbol) != null)
+            return true;
+        else
+            return false;
     }
-
-
-    //Might not be good
-    public String char2binary(char letter)
-    {
-        int num = (int)letter;
-        StringBuffer backwards = new StringBuffer(10);
-        StringBuffer binary = new StringBuffer(10);
-
-        while (num > 0)
-        {
-            backwards.append( num % 2 );
-            num /= 2;
-        }
-
-        binary.setLength( backwards.length() );
-
-        for (int i = backwards.length()-1; i >= 0 ; i--)
-        {
-            binary.setCharAt( backwards.length()-1 - i, backwards.charAt(i) );
-        }
-
-        return (binary.toString());
-    }
-
-
-
-
 }

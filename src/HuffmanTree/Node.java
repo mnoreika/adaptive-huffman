@@ -10,10 +10,17 @@ public class Node {
     Node rightChild = null;
     Node parent = null;
 
-    Node(int weight, int nodeNumber, String symbol) {
-        this.weight = weight;
+    Node(String symbol) {
+        this.symbol = symbol;
+    }
+
+    Node(int nodeNumber, String symbol) {
         this.nodeNumber = nodeNumber;
         this.symbol = symbol;
+    }
+
+    Node() {
+
     }
 
     public int getWeight() {
@@ -30,6 +37,10 @@ public class Node {
 
     public void setWeight(int weight) {
         this.weight = weight;
+    }
+
+    public void incrementWeight() {
+        weight++;
     }
 
     public void setNodeNumber(int nodeNumber) {

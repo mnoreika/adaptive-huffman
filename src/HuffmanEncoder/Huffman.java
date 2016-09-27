@@ -3,7 +3,7 @@ package HuffmanEncoder;
 public class Huffman {
 
     public static void encode(String message) {
-        //Initialising the three
+        //Initialising the tree
         HuffmanTree.Tree tree = new HuffmanTree.Tree(message.length());
 
         //Iterating trough each symbol and building the tree
