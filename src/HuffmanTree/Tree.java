@@ -12,6 +12,7 @@ public class Tree {
         root = new Node(2 * messageLength + 1, "NYT");
         nytNode = root;
 
+
         root.setWeight(0);
     }
 
@@ -30,7 +31,10 @@ public class Tree {
 
 
             blockParent.leftChild = nytNode;
+            nytNode.parent = blockParent;
+
             blockParent.rightChild = leafNode;
+            leafNode = nytNode.parent;
 
             //Setting the weights for all the nodes in the new block
             blockParent.setNodeNumber(nytNode.getNodeNumber());
@@ -39,8 +43,12 @@ public class Tree {
 
             symbols.put(symbol, leafNode);
 
-            root = blockParent;
-
+            if (root == nytNode)
+                root = blockParent;
+            else {
+                nytNode.parent.leftChild = blockParent;
+            }
+            
         }
     }
 
