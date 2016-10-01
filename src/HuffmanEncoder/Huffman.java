@@ -8,9 +8,9 @@ public class Huffman {
 
         //Iterating trough each symbol and building the tree
         for (int i = 0; i < message.length(); i++) {
-            System.out.println(message.charAt(i));
-
             tree.addSymbol(Character.toString(message.charAt(i)));
         }
+
+        tree.printTree(tree.getRoot());
     }
 }

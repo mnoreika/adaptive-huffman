@@ -19,9 +19,6 @@ public class Node {
         this.symbol = symbol;
     }
 
-    Node() {
-
-    }
 
     public int getWeight() {
         return weight;
@@ -31,8 +28,8 @@ public class Node {
         return nodeNumber;
     }
 
-    public int getSymbol() {
-        return nodeNumber;
+    public String getSymbol() {
+        return symbol;
     }
 
     public void setWeight(int weight) {
