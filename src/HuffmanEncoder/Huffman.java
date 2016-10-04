@@ -12,5 +12,8 @@ public class Huffman {
         }
 
         tree.printTree(tree.getRoot());
+
+
+
     }
 }

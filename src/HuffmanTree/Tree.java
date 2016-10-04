@@ -4,14 +4,15 @@ import java.util.*;
 
 public class Tree {
     Node root = null;
-    Map<String, Node> symbols = new HashMap<>();
+
+    public Map<String, Node> symbols = new HashMap<>();
+
+
     Node nytNode = null;
-    int treeDepth = 0;
 
     public Tree (int messageLength) {
         nytNode = new Node(2 * messageLength + 1, "NYT");
         root = nytNode;
-
 
         root.setWeight(0);
     }
@@ -22,15 +23,16 @@ public class Tree {
 
     public void addSymbol(String symbol) {
         if (symbolSeen(symbol)) {
-
             Node symbolNode = symbols.get(symbol);
             symbolNode.incrementWeight();
+
+            //updateHighestNodeInBlock(symbolNode);
+
             updateTree(symbolNode.parent);
 
         } else {
-
             Node symbolNode = new Node(symbol);
-            Node externalNode = new Node("NL");
+            Node externalNode = new Node("EXT");
 
             externalNode.parent = nytNode.parent;
 
@@ -56,92 +58,146 @@ public class Tree {
             symbolNode.setWeight(1);
 
             symbols.put(symbol, symbolNode);
-            treeDepth++;
+
+            //updateHighestNodeInBlock(symbolNode);
+
 
             if (root == nytNode)
                 root = externalNode;
             else {
-                updateTree(symbolNode.parent);
+                updateTree(symbolNode.parent.parent);
             }
 
         }
     }
 
-    public void updateTree(Node parentNode) {
-        while (parentNode != root) {
+    public void updateTree(Node currentNode) {
+        //Increasing the weights of the nodes
+        while (currentNode != null) {
+            Node highestInBlock = findHighestNodeInBlock(currentNode.getWeight(), currentNode.getNodeNumber());
 
-            parentNode = parentNode.parent;
+            if (highestInBlock != null && highestInBlock != currentNode.parent && currentNode != highestInBlock) {
+
+                if (areSiblings(currentNode, highestInBlock)) {
+                    Node parent = currentNode.parent;
+                    Node leftChild = parent.leftChild;
+
+                    parent.leftChild = parent.rightChild;
+                    parent.rightChild = leftChild;
+
+
+                }
+                else {
+                    if (highestInBlock.parent.leftChild == highestInBlock)
+                        highestInBlock.parent.leftChild = currentNode;
+                    else
+                        highestInBlock.parent.rightChild = currentNode;
+
+                    if (currentNode.parent.leftChild == currentNode)
+                        currentNode.parent.leftChild = highestInBlock;
+                    else
+                        currentNode.parent.rightChild = highestInBlock;
+
+                    Node currentParent = currentNode.parent;
+                    currentNode.parent = highestInBlock.parent;
+
+                    highestInBlock.parent = currentParent;
+
+                }
+
+
+
+
+                //Swapping the node numbers of the nodes that are being switched
+                int highestNodeNumber = highestInBlock.getNodeNumber();
+
+                highestInBlock.setNodeNumber(currentNode.getNodeNumber());
+                currentNode.setNodeNumber(highestNodeNumber);
+
+            }
+
+            currentNode.setWeight(currentNode.leftChild.getWeight() + currentNode.rightChild.getWeight());
+
+            printTree(root);
+            currentNode = currentNode.parent;
         }
     }
 
-    private boolean symbolSeen(String symbol) {
-        if (symbols.get(symbol) != null)
-            return true;
-        else
-            return false;
-    }
+//    private void updateHighestNodeInBlock(Node symbolNode) {
+//        if (blocks.get(symbolNode.weight) != null) {
+//            if (blocks.get(symbolNode.weight).getNodeNumber() < symbolNode.getNodeNumber())
+//                blocks.put(symbolNode.weight, symbolNode);
+//        }
+//        else
+//            blocks.put(symbolNode.weight, symbolNode);
+//    }
 
-
-
-    Queue<Node> queue = new LinkedList<Node>() ;
-    public  void printTree(Node root) {
-        if (root == null)
-            return;
+    public Node findHighestNodeInBlock (int weight, int nodeNumber) {
+        Queue<Node> queue = new LinkedList<Node>();
 
         queue.clear();
         queue.add(root);
 
-        ArrayList<Node> treeNodes = new ArrayList();
+        while(!queue.isEmpty()) {
+            Node currentNode = queue.remove();
 
-        while(!queue.isEmpty()){
-            Node node = queue.remove();
-            treeNodes.add(node);
-            if(node.leftChild != null) queue.add(node.leftChild);
-            if(node.rightChild != null) queue.add(node.rightChild);
+            if (currentNode.getWeight() == weight && currentNode.getNodeNumber() > nodeNumber) {
+                return currentNode;
+            }
+
+            if(currentNode.rightChild != null) queue.add(currentNode.rightChild);
+            if(currentNode.leftChild != null) queue.add(currentNode.leftChild);
+
         }
 
-        boolean rootPrinted = false;
-        boolean firstChildren = true;
-        int indentation = treeNodes.size() * 2 * 2 * 2;
-        int slashSpaceSize = 3 * treeDepth + 3;
-        int childrenSpaceSize = 3 * treeDepth + 2;
+        return null;
+    }
 
-        for (int i = 0; i < treeNodes.size(); i++) {
+    private boolean symbolSeen(String symbol) {
+        return symbols.get(symbol) != null;
+    }
 
-            if (rootPrinted == false) {
-                System.out.println(String.format("%" + indentation + "s", "") +  printNode(treeNodes.get(i)));
-                indentation -= treeDepth;
-                rootPrinted = true;
+
+
+    public void printTree(Node root) {
+        preorder(root, true);
+    }
+
+    int indentation = 5;
+    public void preorder(Node currentNode, boolean lastChild) {
+
+        if(currentNode != null) {
+
+            if (currentNode == root) {
+                System.out.println(String.format("%" + indentation + "s", "") +  "└── " + printNode(currentNode));
+            }
+            else if (lastChild) {
+                System.out.println(String.format("%" + indentation + "s", "") +  "└── " + printNode(currentNode));
             }
             else {
-
-                String slashSpace = String.format("%" + slashSpaceSize + "s", "");
-
-
-                System.out.println(String.format("%" + indentation + "s", "") +  "/" + slashSpace + "\\");
-                indentation -= 1;
-                System.out.println(String.format("%" + indentation + "s", "") +  "/" + slashSpace + "  " + "\\");
-                indentation -= treeDepth - 1;
-
-
-                String spaceBetweenChildren = String.format("%" + childrenSpaceSize + "s", "");
-
-//                if (treeNodes.get(i).getSymbol() == "NYT")
-//                    spaceBetweenChildren = "           ";
-//                else
-//                    spaceBetweenChildren = "            ";
-
-                System.out.println(String.format("%" + indentation + "s", "") + printNode(treeNodes.get(i)) + spaceBetweenChildren + printNode(treeNodes.get(i + 1)));
-                childrenSpaceSize -= 3;
-                indentation -= 2;
-                slashSpaceSize -= 5;
-                i++;
+                System.out.println(String.format("%" + indentation + "s", "") +  "├── " + printNode(currentNode));
             }
-        }
 
+
+            indentation += 8;
+            preorder(currentNode.rightChild, false);
+            preorder(currentNode.leftChild, true);
+            indentation -= 8;
+        }
     }
+
+
 
     private String printNode(Node node) {
         return node.getWeight() + " |" + node.getSymbol() + "| " + node.getNodeNumber();
     }
+
+    private boolean areSiblings(Node firstNode, Node secondNode) {
+        if (firstNode.parent == secondNode.parent)
+            return true;
+
+        return false;
+    }
+
+
 }
