@@ -7,7 +7,6 @@ public class Tree {
 
     public Map<String, Node> symbols = new HashMap<>();
 
-
     Node nytNode = null;
 
     public Tree (int messageLength) {
@@ -21,55 +20,56 @@ public class Tree {
         return root;
     }
 
-    public void addSymbol(String symbol) {
-        if (symbolSeen(symbol)) {
-            Node symbolNode = symbols.get(symbol);
-            symbolNode.incrementWeight();
-
-            //updateHighestNodeInBlock(symbolNode);
-
-            updateTree(symbolNode.parent);
-
-        } else {
-            Node symbolNode = new Node(symbol);
-            Node externalNode = new Node("EXT");
-
-            externalNode.parent = nytNode.parent;
-
-            if (root != nytNode)
-                nytNode.parent.leftChild = externalNode;
-
-            externalNode.leftChild = nytNode;
-            nytNode.parent = externalNode;
+    public void updateSymbol(String symbol) {
+        Node symbolNode = symbols.get(symbol);
 
 
+        updateTree(symbolNode);
 
-
-            externalNode.rightChild = symbolNode;
-            symbolNode.parent = externalNode;
-
-            //Setting the node numbers for the targeted nodes
-            externalNode.setNodeNumber(nytNode.getNodeNumber());
-            symbolNode.setNodeNumber(nytNode.getNodeNumber() - 1);
-            nytNode.setNodeNumber(nytNode.getNodeNumber() - 2);
-
-            //Setting the weights for all the new nodes
-            externalNode.setWeight(1);
-            symbolNode.setWeight(1);
-
-            symbols.put(symbol, symbolNode);
-
-            //updateHighestNodeInBlock(symbolNode);
-
-
-            if (root == nytNode)
-                root = externalNode;
-            else {
-                updateTree(symbolNode.parent.parent);
-            }
-
-        }
+        symbolNode.incrementWeight();
     }
+
+    public void addSymbol(String symbol) {
+        Node symbolNode = new Node(symbol);
+        Node externalNode = new Node("EXT");
+
+        externalNode.parent = nytNode.parent;
+
+        if (root != nytNode)
+            nytNode.parent.leftChild = externalNode;
+
+        externalNode.leftChild = nytNode;
+        nytNode.parent = externalNode;
+
+
+
+
+        externalNode.rightChild = symbolNode;
+        symbolNode.parent = externalNode;
+
+        //Setting the node numbers for the targeted nodes
+        externalNode.setNodeNumber(nytNode.getNodeNumber());
+        symbolNode.setNodeNumber(nytNode.getNodeNumber() - 1);
+        nytNode.setNodeNumber(nytNode.getNodeNumber() - 2);
+
+        //Setting the weights for all the new nodes
+        externalNode.setWeight(1);
+        symbolNode.setWeight(1);
+
+        symbols.put(symbol, symbolNode);
+
+        //updateHighestNodeInBlock(symbolNode);
+
+
+        if (root == nytNode)
+            root = externalNode;
+        else {
+            updateTree(symbolNode.parent.parent);
+        }
+
+    }
+
+
 
     public void updateTree(Node currentNode) {
         //Increasing the weights of the nodes
@@ -116,9 +116,14 @@ public class Tree {
 
             }
 
-            currentNode.setWeight(currentNode.leftChild.getWeight() + currentNode.rightChild.getWeight());
 
-            printTree(root);
+            if (currentNode.leftChild == null && currentNode.rightChild != null)
+                currentNode.setWeight(currentNode.rightChild.getWeight());
+            else if (currentNode.leftChild != null && currentNode.rightChild == null)
+                currentNode.setWeight(currentNode.leftChild.getWeight());
+            else if (currentNode.leftChild != null && currentNode.rightChild != null)
+                currentNode.setWeight(currentNode.rightChild.getWeight() + currentNode.leftChild.getWeight());
+
             currentNode = currentNode.parent;
         }
     }
@@ -145,22 +150,49 @@ public class Tree {
                 return currentNode;
             }
 
-            if(currentNode.rightChild != null) queue.add(currentNode.rightChild);
-            if(currentNode.leftChild != null) queue.add(currentNode.leftChild);
+            if (currentNode.rightChild != null) queue.add(currentNode.rightChild);
+            if (currentNode.leftChild != null) queue.add(currentNode.leftChild);
 
         }
 
         return null;
     }
 
-    private boolean symbolSeen(String symbol) {
+    public boolean symbolSeen(String symbol) {
         return symbols.get(symbol) != null;
     }
 
 
-
     public void printTree(Node root) {
         preorder(root, true);
+    }
+
+    public String getSymbolCoding(Node symbol) {
+        Stack coding = new Stack();
+
+        if (symbol.parent == null)
+            return "";
+
+        while (symbol.parent != null) {
+            if (symbol.parent.leftChild == symbol)
+                coding.push("0");
+            else
+                coding.push("1");
+
+            symbol = symbol.parent;
+        }
+
+        StringBuilder encoding = new StringBuilder();
+
+        while (!coding.empty())
+            encoding.append(coding.pop());
+
+        return encoding.toString();
+
+    }
+
+    public Node getNYTNode() {
+        return nytNode;
     }
 
     int indentation = 5;
@@ -197,6 +229,10 @@ public class Tree {
             return true;
 
         return false;
+    }
+
+    public Map<String, Node> getSymbols() {
+        return symbols;
     }
 
 
