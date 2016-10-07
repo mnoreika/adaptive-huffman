@@ -16,10 +16,10 @@ public class Huffman {
 
     public static void encode(String inputFile) throws IOException {
         //Initialising the tree
-        tree = new HuffmanTree.Tree(50);
+        tree = new HuffmanTree.Tree(300);
 
         in = new FileInputStream(inputFile);
-        out = new FileOutputStream("compressed.huf");
+        out = new FileOutputStream("compressed");
 
         int c;
         while ((c = in.read()) != -1) {
@@ -28,12 +28,15 @@ public class Huffman {
             encodeSymbol(symbol);
         }
 
+        encodeLastByte();
 
-        System.out.println("Encoding finished.");
-//        System.out.println();
-//        tree.printTree(tree.getRoot());
+        tree.printTree(tree.getRoot());
 
         out.close();
+
+        System.out.println("Encoding finished.");
+
+
     }
 
     public static void encodeSymbol(String symbol) throws IOException {
@@ -51,18 +54,34 @@ public class Huffman {
         }
 
         writeEncodingToFile();
+
+
+    }
+
+    public static void encodeLastByte() throws IOException {
+        if (encoding.length() == 0)
+            return;
+
+        while (encoding.length() < 8) {
+            encoding.append(tree.getSymbolCoding(tree.getNYTNode()));
+        }
+
+       flushByteToFile();
+
     }
 
     private static void writeEncodingToFile() throws IOException {
         while (encoding.length() >= 8) {
-            short a = Short.parseShort(encoding.substring(0, 8), 2);
-            ByteBuffer bytes = ByteBuffer.allocate(2).putShort(a);
+            flushByteToFile();
 
-            byte[] array = bytes.array();
-
-            out.write(array[0]);
             encoding.delete(0, 8);
         }
+    }
+
+    private static void flushByteToFile() throws IOException {
+        int b = Integer.parseInt(encoding.substring(0, 8), 2);
+
+        out.write(b);
     }
 
 

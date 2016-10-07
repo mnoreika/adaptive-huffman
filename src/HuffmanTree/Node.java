@@ -4,6 +4,7 @@ public class Node {
     int weight;
     int nodeNumber;
     String symbol;
+    boolean isLeaf = false;
     boolean isRightChild = true;
 
 
@@ -13,11 +14,19 @@ public class Node {
 
     Node(String symbol) {
         this.symbol = symbol;
+
+        if (symbol != "EXT") {
+            isLeaf = true;
+        }
     }
 
     Node(int nodeNumber, String symbol) {
         this.nodeNumber = nodeNumber;
         this.symbol = symbol;
+
+        isLeaf = true;
+
+
     }
 
 
@@ -51,5 +60,17 @@ public class Node {
 
     public void setChildOrientation(boolean isRight) {
         isRightChild = isRight;
+    }
+
+    public Node getLeftChild () {
+        return leftChild;
+    }
+
+    public Node getRightChild () {
+        return rightChild;
+    }
+
+    public boolean isLeaf() {
+        return isLeaf;
     }
 }
