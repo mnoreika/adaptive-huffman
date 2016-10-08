@@ -1,25 +1,23 @@
-package HuffmanEncoder;
+package HuffmanCoder;
 
 import HuffmanTree.Node;
 
-import javax.xml.bind.SchemaOutputResolver;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
-public class Huffman {
-    private static FileInputStream in = null;
-    private static HuffmanTree.Tree tree = null;
-    private static StringBuilder encoding = new StringBuilder();
-    private static FileOutputStream out = null;
+public class Encoder {
+    private FileInputStream in = null;
+    private HuffmanTree.Tree tree = null;
+    private StringBuilder encoding = new StringBuilder();
+    private FileOutputStream out = null;
 
-    public static void encode(String inputFile) throws IOException {
+    public void encode(String inputPath) throws IOException {
         //Initialising the tree
         tree = new HuffmanTree.Tree(300);
 
-        in = new FileInputStream(inputFile);
-        out = new FileOutputStream("compressed");
+        in = new FileInputStream(inputPath);
+        out = new FileOutputStream(inputPath + ".huf");
 
         int c;
         while ((c = in.read()) != -1) {
@@ -30,16 +28,11 @@ public class Huffman {
 
         encodeLastByte();
 
-        tree.printTree(tree.getRoot());
-
         out.close();
-
-        System.out.println("Encoding finished.");
-
 
     }
 
-    public static void encodeSymbol(String symbol) throws IOException {
+    public void encodeSymbol(String symbol) throws IOException {
         if (tree.symbolSeen(symbol)) {
             Node symbolNode = tree.getSymbols().get(symbol);
 
@@ -58,7 +51,7 @@ public class Huffman {
 
     }
 
-    public static void encodeLastByte() throws IOException {
+    public void encodeLastByte() throws IOException {
         if (encoding.length() == 0)
             return;
 
@@ -70,7 +63,7 @@ public class Huffman {
 
     }
 
-    private static void writeEncodingToFile() throws IOException {
+    private void writeEncodingToFile() throws IOException {
         while (encoding.length() >= 8) {
             flushByteToFile();
 
@@ -78,10 +71,11 @@ public class Huffman {
         }
     }
 
-    private static void flushByteToFile() throws IOException {
+    private void flushByteToFile() throws IOException {
         int b = Integer.parseInt(encoding.substring(0, 8), 2);
 
         out.write(b);
+
     }
 
 

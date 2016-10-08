@@ -3,67 +3,66 @@ package HuffmanTree;
 import java.util.*;
 
 public class Tree {
-    Node root = null;
+    Node root = null; // Pointer to the root of the tree
+    Map<String, Node> symbols = new HashMap<>(); // Hashmap that stores seen symbols
+    Node nytNode = null; //Pointer to the Not Yet Transmitted node
 
-    public Map<String, Node> symbols = new HashMap<>();
-
-    Node nytNode = null;
-
-    public Tree (int messageLength) {
-        nytNode = new Node(2 * messageLength + 1, "NYT");
+    public Tree (int m) {
+        /* Initialising the NYT node and setting its node number to account for the maximum number of different symbols */
+        nytNode = new Node(2 * m + 1, "NYT");
         root = nytNode;
 
+        /* Setting the weight of NYT node to 0 */
         root.setWeight(0);
     }
 
-    public Node getRoot() {
-        return root;
-    }
-
     public void updateSymbol(String symbol) {
+        /* Finding the node in the Hashmap */
         Node symbolNode = symbols.get(symbol);
 
-
+        /* Updating the tree to check for potential swaps and to keep the invariant */
         updateTree(symbolNode);
-
-        symbolNode.incrementWeight();
     }
 
     public void addSymbol(String symbol) {
+        /* Creating a symbol node for the new symbol */
         Node symbolNode = new Node(symbol);
-        Node externalNode = new Node("EXT");
 
-        externalNode.parent = nytNode.parent;
+        /* Creating an internal node*/
+        Node internalNode = new Node("INT");
 
+        /* Switching the old NYT node with the internal node */
+        internalNode.parent = nytNode.parent;
+
+        /* If NYT is not root, changing the leftChild of old NYT's parent */
         if (root != nytNode)
-            nytNode.parent.leftChild = externalNode;
+            nytNode.parent.leftChild = internalNode;
 
-        externalNode.leftChild = nytNode;
-        nytNode.parent = externalNode;
+        /* Setting internal the parent of NYT */
+        internalNode.leftChild = nytNode;
+        nytNode.parent = internalNode;
 
+        /* Setting internal node the parent of symbol node (leaf node) */
+        internalNode.rightChild = symbolNode;
+        symbolNode.parent = internalNode;
 
-
-
-        externalNode.rightChild = symbolNode;
-        symbolNode.parent = externalNode;
-
-        //Setting the node numbers for the targeted nodes
-        externalNode.setNodeNumber(nytNode.getNodeNumber());
+        /* Setting the node numbers for the targeted nodes */
+        internalNode.setNodeNumber(nytNode.getNodeNumber());
         symbolNode.setNodeNumber(nytNode.getNodeNumber() - 1);
         nytNode.setNodeNumber(nytNode.getNodeNumber() - 2);
 
-        //Setting the weights for all the new nodes
-        externalNode.setWeight(1);
+        /* Setting the weights for all the new nodes */
+        internalNode.setWeight(1);
         symbolNode.setWeight(1);
 
+        /* Adding the symbol to the seen symbol HashMap */
         symbols.put(symbol, symbolNode);
 
-        //updateHighestNodeInBlock(symbolNode);
-
-
+        /* Switching the root to the new internal node */
         if (root == nytNode)
-            root = externalNode;
+            root = internalNode;
         else {
+            /* Calling the update function to update the tree */
             updateTree(symbolNode.parent.parent);
         }
 
@@ -72,12 +71,16 @@ public class Tree {
 
 
     public void updateTree(Node currentNode) {
-        //Increasing the weights of the nodes
+
+        /* Climbing up the tree until root is reached */
         while (currentNode != null) {
+            /* Looking for the highest node in the block (Block - nodes with the same weight) */
             Node highestInBlock = findHighestNodeInBlock(currentNode.getWeight(), currentNode.getNodeNumber());
 
+            /* Determining if a swap could be performed for the targeted nodes */
             if (highestInBlock != null && highestInBlock != currentNode.parent && currentNode != highestInBlock) {
 
+                /* If the nodes to be swapped are siblings, then pointers of the shared parent node are swapped */
                 if (areSiblings(currentNode, highestInBlock)) {
                     Node parent = currentNode.parent;
                     Node leftChild = parent.leftChild;
@@ -85,8 +88,9 @@ public class Tree {
                     parent.leftChild = parent.rightChild;
                     parent.rightChild = leftChild;
 
-
                 }
+
+                /* Swapping pointers between targeted nodes and their parents */
                 else {
                     if (highestInBlock.parent.leftChild == highestInBlock)
                         highestInBlock.parent.leftChild = currentNode;
@@ -106,36 +110,29 @@ public class Tree {
                 }
 
 
-
-
-                //Swapping the node numbers of the nodes that are being switched
+                /* Swapping the node numbers of the nodes that are being switched */
                 int highestNodeNumber = highestInBlock.getNodeNumber();
 
+                /* Changing the node numbers of the swapped nodes */
                 highestInBlock.setNodeNumber(currentNode.getNodeNumber());
                 currentNode.setNodeNumber(highestNodeNumber);
 
             }
 
+            /* Changing the node numbers of the swapped nodes */
+//            if (currentNode.leftChild == null && currentNode.rightChild != null)
+//                currentNode.setWeight(currentNode.rightChild.getWeight());
+//            else if (currentNode.leftChild != null && currentNode.rightChild == null)
+//                currentNode.setWeight(currentNode.leftChild.getWeight());
+//            else if (currentNode.leftChild != null && currentNode.rightChild != null)
+//                currentNode.setWeight(currentNode.rightChild.getWeight() + currentNode.leftChild.getWeight());
 
-            if (currentNode.leftChild == null && currentNode.rightChild != null)
-                currentNode.setWeight(currentNode.rightChild.getWeight());
-            else if (currentNode.leftChild != null && currentNode.rightChild == null)
-                currentNode.setWeight(currentNode.leftChild.getWeight());
-            else if (currentNode.leftChild != null && currentNode.rightChild != null)
-                currentNode.setWeight(currentNode.rightChild.getWeight() + currentNode.leftChild.getWeight());
+            currentNode.incrementWeight();
 
             currentNode = currentNode.parent;
         }
     }
 
-//    private void updateHighestNodeInBlock(Node symbolNode) {
-//        if (blocks.get(symbolNode.weight) != null) {
-//            if (blocks.get(symbolNode.weight).getNodeNumber() < symbolNode.getNodeNumber())
-//                blocks.put(symbolNode.weight, symbolNode);
-//        }
-//        else
-//            blocks.put(symbolNode.weight, symbolNode);
-//    }
 
     public Node findHighestNodeInBlock (int weight, int nodeNumber) {
         Queue<Node> queue = new LinkedList<Node>();
@@ -148,6 +145,10 @@ public class Tree {
 
             if (currentNode.getWeight() == weight && currentNode.getNodeNumber() > nodeNumber) {
                 return currentNode;
+            }
+
+            if (currentNode.getWeight() < weight) {
+                return null;
             }
 
             if (currentNode.rightChild != null) queue.add(currentNode.rightChild);
@@ -233,6 +234,11 @@ public class Tree {
 
     public Map<String, Node> getSymbols() {
         return symbols;
+    }
+
+    /*  */
+    public Node getRoot() {
+        return root;
     }
 
 

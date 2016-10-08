@@ -15,7 +15,7 @@ public class Node {
     Node(String symbol) {
         this.symbol = symbol;
 
-        if (symbol != "EXT") {
+        if (symbol != "INT") {
             isLeaf = true;
         }
     }
