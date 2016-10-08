@@ -1,34 +1,29 @@
 package HuffmanTree;
 
 public class Node {
-    int weight;
-    int nodeNumber;
-    String symbol;
-    boolean isLeaf = false;
-    boolean isRightChild = true;
 
+    int weight; // Weight of the node
+    int nodeNumber; // Node number of the node
+    String symbol; // A sequence of bits that represent a symbol in binary string format
+    boolean isLeaf = true; // Tracks if the node is a leaf
 
-    Node leftChild = null;
-    Node rightChild = null;
-    Node parent = null;
+    Node leftChild = null; // Left child of the node
+    Node rightChild = null; // Right child of the node
+    Node parent = null; // The parent of the node
 
     Node(String symbol) {
         this.symbol = symbol;
 
-        if (symbol != "INT") {
-            isLeaf = true;
+        /* Internal nodes are not leafs */
+        if (symbol == "INT") {
+            isLeaf = false;
         }
     }
 
     Node(int nodeNumber, String symbol) {
         this.nodeNumber = nodeNumber;
         this.symbol = symbol;
-
-        isLeaf = true;
-
-
     }
-
 
     public int getWeight() {
         return weight;
@@ -46,20 +41,13 @@ public class Node {
         this.weight = weight;
     }
 
+
     public void incrementWeight() {
         weight++;
     }
 
     public void setNodeNumber(int nodeNumber) {
         this.nodeNumber = nodeNumber;
-    }
-
-    public boolean isRightChild() {
-        return isRightChild;
-    }
-
-    public void setChildOrientation(boolean isRight) {
-        isRightChild = isRight;
     }
 
     public Node getLeftChild () {

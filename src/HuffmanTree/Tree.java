@@ -16,6 +16,10 @@ public class Tree {
         root.setWeight(0);
     }
 
+    /**
+     * Updates the symbol node in the tree
+     * @param symbol
+     */
     public void updateSymbol(String symbol) {
         /* Finding the node in the Hashmap */
         Node symbolNode = symbols.get(symbol);
@@ -24,6 +28,10 @@ public class Tree {
         updateTree(symbolNode);
     }
 
+    /**
+     * Adds a new symbol to the tree
+     * @param symbol
+     */
     public void addSymbol(String symbol) {
         /* Creating a symbol node for the new symbol */
         Node symbolNode = new Node(symbol);
@@ -69,7 +77,10 @@ public class Tree {
     }
 
 
-
+    /**
+     * Updating the tree and keeping the invariant
+     * @param currentNode
+     */
     public void updateTree(Node currentNode) {
 
         /* Climbing up the tree until root is reached */
@@ -119,38 +130,42 @@ public class Tree {
 
             }
 
-            /* Changing the node numbers of the swapped nodes */
-//            if (currentNode.leftChild == null && currentNode.rightChild != null)
-//                currentNode.setWeight(currentNode.rightChild.getWeight());
-//            else if (currentNode.leftChild != null && currentNode.rightChild == null)
-//                currentNode.setWeight(currentNode.leftChild.getWeight());
-//            else if (currentNode.leftChild != null && currentNode.rightChild != null)
-//                currentNode.setWeight(currentNode.rightChild.getWeight() + currentNode.leftChild.getWeight());
-
+            /* Incrementing the weight of the current node*/
             currentNode.incrementWeight();
 
+            /* Going up to the tree */
             currentNode = currentNode.parent;
         }
     }
 
-
+    /**
+     * Finds the highest node in the block
+     * @param weight
+     * @param nodeNumber
+     * @return
+     */
     public Node findHighestNodeInBlock (int weight, int nodeNumber) {
-        Queue<Node> queue = new LinkedList<Node>();
+        Queue<Node> queue = new LinkedList<>();
 
+        /* Clearing the queue and adding the root to it */
         queue.clear();
         queue.add(root);
 
+        /* Using depth first traversal to traverse the tree */
         while(!queue.isEmpty()) {
             Node currentNode = queue.remove();
 
-            if (currentNode.getWeight() == weight && currentNode.getNodeNumber() > nodeNumber) {
+            /* Returning the current node if it is the block and has a higher node number */
+            if (currentNode.getWeight() == weight && currentNode.getNodeNumber() > nodeNumber)
                 return currentNode;
-            }
 
-            if (currentNode.getWeight() < weight) {
+            /* Stopping the search if current node in not in the block (has lower weight than targeted node)
+            *  Potentially, should optimise the search by a half in terms of time complexity
+            */
+            if (currentNode.getWeight() < weight)
                 return null;
-            }
 
+            /* Recursively traversing the tree, right child first! (This way the highest numbered node in the block is reached first) */
             if (currentNode.rightChild != null) queue.add(currentNode.rightChild);
             if (currentNode.leftChild != null) queue.add(currentNode.leftChild);
 
@@ -159,21 +174,19 @@ public class Tree {
         return null;
     }
 
-    public boolean symbolSeen(String symbol) {
-        return symbols.get(symbol) != null;
-    }
-
-
-    public void printTree(Node root) {
-        preorder(root, true);
-    }
-
+    /**
+     * Finds a coding for a particular symbol in the tree
+     * @param symbol
+     * @return
+     */
     public String getSymbolCoding(Node symbol) {
+        /* Using stack to store the coding for a particular symbol in reverse */
         Stack coding = new Stack();
 
         if (symbol.parent == null)
             return "";
 
+        /* Going up the tree and determining the coding */
         while (symbol.parent != null) {
             if (symbol.parent.leftChild == symbol)
                 coding.push("0");
@@ -185,6 +198,7 @@ public class Tree {
 
         StringBuilder encoding = new StringBuilder();
 
+        /* Transforming the coding from the stack into a string */
         while (!coding.empty())
             encoding.append(coding.pop());
 
@@ -192,15 +206,23 @@ public class Tree {
 
     }
 
-    public Node getNYTNode() {
-        return nytNode;
+    public boolean symbolSeen(String symbol) {
+        return symbols.get(symbol) != null;
     }
 
-    int indentation = 5;
-    public void preorder(Node currentNode, boolean lastChild) {
+    public void printTree(Node root) {
+        preorderTraversal(root, true);
+    }
+
+    /**
+     * Traverses the tree in depth first pre order way
+     */
+    int indentation = 5; // Variable used to keep track of how much indentation is required for a particular node being printed
+    public void preorderTraversal(Node currentNode, boolean lastChild) {
 
         if(currentNode != null) {
 
+            /* Printing the node in particular way depending if it's a right or a left child or parent*/
             if (currentNode == root) {
                 System.out.println(String.format("%" + indentation + "s", "") +  "└── " + printNode(currentNode));
             }
@@ -211,19 +233,18 @@ public class Tree {
                 System.out.println(String.format("%" + indentation + "s", "") +  "├── " + printNode(currentNode));
             }
 
-
+            /* Increasing the indentation before printing the children and decreasing it after that */
             indentation += 8;
-            preorder(currentNode.rightChild, false);
-            preorder(currentNode.leftChild, true);
+            preorderTraversal(currentNode.rightChild, false);
+            preorderTraversal(currentNode.leftChild, true);
             indentation -= 8;
         }
     }
 
-
-
     private String printNode(Node node) {
         return node.getWeight() + " |" + node.getSymbol() + "| " + node.getNodeNumber();
     }
+
 
     private boolean areSiblings(Node firstNode, Node secondNode) {
         if (firstNode.parent == secondNode.parent)
@@ -236,9 +257,12 @@ public class Tree {
         return symbols;
     }
 
-    /*  */
     public Node getRoot() {
         return root;
+    }
+
+    public Node getNYTNode() {
+        return nytNode;
     }
 
 
